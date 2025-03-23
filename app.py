@@ -18,10 +18,15 @@ def save_data(df):
 data = load_data()
 
 bloc = st.selectbox("Choisir le Bloc", ["Hypertrophie", "Force", "Métabolique"])
-
 seance = st.selectbox("Sélectionner la Séance", ["Séance 1", "Séance 2", "Séance 3"])
 
-exercices_principaux = ["Squat profond", "Développé couché haltères", "Tractions lestées neutres", "Soulevé de terre roumain", "Développé incliné haltères", "Rowing haltère unilatéral", "Front Squat", "Développé décliné haltères", "Back Squat", "Développé couché barre", "Tractions lestées", "Deadlift traditionnel", "Développé incliné barre", "Rowing Pendlay lourd barre", "Front Squat lourd", "Développé décliné barre lourd"]
+exercices_principaux = [
+    "Squat profond", "Développé couché haltères", "Tractions lestées neutres",
+    "Soulevé de terre roumain", "Développé incliné haltères", "Rowing haltère unilatéral",
+    "Front Squat", "Développé décliné haltères", "Back Squat", "Développé couché barre",
+    "Tractions lestées", "Deadlift traditionnel", "Développé incliné barre",
+    "Rowing Pendlay lourd barre", "Front Squat lourd", "Développé décliné barre lourd"
+]
 
 programme_detaille = {
     "Hypertrophie": {
@@ -45,5 +50,17 @@ if st.checkbox("📋 Voir le Programme Détaillé"):
     st.subheader(f"Programme détaillé - {bloc} / {seance}")
     st.table(pd.DataFrame(programme_detaille[bloc][seance], columns=["Exercice", "Technique Intensification"]))
 
-# Reste du code inchangé...
+st.subheader("📈 Historique de progression")
+st.dataframe(data.tail(10), use_container_width=True)
+
+st.subheader("🎯 Objectifs prochaine séance")
+for exo, tech in programme_detaille[bloc][seance]:
+    exo_data = data[(data["Exercice"] == exo) & (data["Bloc"] == bloc)]
+    if not exo_data.empty:
+        derniere_charge = exo_data.iloc[-1]["Charge"]
+        derniere_rpe = exo_data.iloc[-1]["RPE"]
+        progression = 1.025 if exo in exercices_principaux and derniere_rpe <= 8 else 1.015
+        st.write(f"{exo} : {round(derniere_charge * progression, 1)} kg")
+    else:
+        st.write(f"{exo} : Aucune donnée précédente.")
 
