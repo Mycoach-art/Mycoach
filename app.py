@@ -21,6 +21,8 @@ bloc = st.selectbox("Choisir le Bloc", ["Hypertrophie", "Force", "Métabolique"]
 
 seance = st.selectbox("Sélectionner la Séance", ["Séance 1", "Séance 2", "Séance 3"])
 
+exercices_principaux = ["Squat profond", "Développé couché haltères", "Tractions lestées neutres", "Soulevé de terre roumain", "Développé incliné haltères", "Rowing haltère unilatéral", "Front Squat", "Développé décliné haltères", "Back Squat", "Développé couché barre", "Tractions lestées", "Deadlift traditionnel", "Développé incliné barre", "Rowing Pendlay lourd barre", "Front Squat lourd", "Développé décliné barre lourd"]
+
 exercices = {
     "Hypertrophie": {
         "Séance 1": ["Squat profond", "Développé couché haltères", "Tractions lestées neutres", "Fentes marchées haltères", "Élévations latérales haltères", "Oiseau haltères", "Curl marteau haltères", "Dips lestés"],
@@ -71,10 +73,13 @@ for exo in exercices[bloc][seance]:
     exo_data = data[(data["Exercice"] == exo) & (data["Bloc"] == bloc)]
     if not exo_data.empty:
         derniere_charge = exo_data.iloc[-1]["Charge"]
-        prochaine_charge = round(derniere_charge * 1.025, 1)
+        derniere_rpe = exo_data.iloc[-1]["RPE"]
+        progression = 1.025 if exo in exercices_principaux and derniere_rpe <= 8 else 1.015
+        prochaine_charge = round(derniere_charge * progression, 1)
         prochaines_charges[exo] = prochaine_charge
 
 if prochaines_charges:
     st.table(pd.DataFrame(prochaines_charges.items(), columns=["Exercice", "Charge Prochaine Séance (kg)"]))
 else:
     st.info("Aucune donnée antérieure pour calculer la progression.")
+
