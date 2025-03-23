@@ -73,9 +73,7 @@ for exo in exercices[bloc][seance]:
     exo_data = data[(data["Exercice"] == exo) & (data["Bloc"] == bloc)]
     if not exo_data.empty:
         derniere_charge = exo_data.iloc[-1]["Charge"]
-        derniere_rpe = exo_data.iloc[-1]["RPE"]
-        progression = 1.025 if exo in exercices_principaux and derniere_rpe <= 8 else 1.015
-        prochaine_charge = round(derniere_charge * progression, 1)
+        prochaine_charge = round(derniere_charge * 1.025, 1)
         prochaines_charges[exo] = prochaine_charge
 
 if prochaines_charges:
