@@ -2,41 +2,46 @@ import streamlit as st
 import pandas as pd
 import datetime
 
-# Titre et style gamifié
 st.set_page_config(page_title='🚀 Athlète Pro Tracker', layout='wide')
 st.title('🏋️ Athlète Pro Tracker')
 
-# Chargement des données
 @st.cache_data
 def load_data():
     try:
         return pd.read_csv('data.csv')
     except:
-        return pd.DataFrame(columns=["Date","Bloc","Séance","Exercice","Set","Charge","Répétitions","Tempo","Repos","RPE","Technique"])
+        return pd.DataFrame(columns=["Date", "Bloc", "Séance", "Exercice", "Set", "Charge", "Répétitions", "Tempo", "Repos", "RPE", "Technique"])
 
-# Sauvegarde des données
 def save_data(df):
     df.to_csv('data.csv', index=False)
 
 data = load_data()
 
-# Sélection du bloc
 bloc = st.selectbox("Choisir le Bloc", ["Hypertrophie", "Force", "Métabolique"])
 
-# Sélection de la séance
 seance = st.selectbox("Sélectionner la Séance", ["Séance 1", "Séance 2", "Séance 3"])
 
-# Exercices prédéfinis
 exercices = {
-    "Séance 1": ["Squat profond", "Développé couché haltères", "Tractions lestées", "Fentes marchées", "Élévations latérales + Oiseau", "Curl marteau + Dips"],
-    "Séance 2": ["Soulevé de terre roumain", "Développé incliné haltères", "Rowing haltère", "Hip Thrust", "Face Pull + Shrugs", "Curl EZ + Extension Triceps"],
-    "Séance 3": ["Front Squat", "Développé décliné", "Tirage horizontal", "Leg Curl", "Développé militaire", "Curl incliné + Skullcrushers"]
+    "Hypertrophie": {
+        "Séance 1": ["Squat profond", "Développé couché haltères", "Tractions lestées neutres", "Fentes marchées haltères", "Élévations latérales haltères", "Oiseau haltères", "Curl marteau haltères", "Dips lestés"],
+        "Séance 2": ["Soulevé de terre roumain", "Développé incliné haltères", "Rowing haltère unilatéral", "Hip Thrust", "Shrugs haltères", "Face Pull poulie", "Curl EZ barre", "Extensions triceps poulie corde"],
+        "Séance 3": ["Front Squat", "Développé décliné haltères", "Tirage horizontal poulie basse", "Leg Curl allongé", "Développé militaire haltères", "Curl incliné haltères", "Skullcrushers barre EZ"]
+    },
+    "Force": {
+        "Séance 1": ["Back Squat", "Développé couché barre", "Tractions lestées", "Split Squat bulgare", "Développé militaire debout barre", "Curl haltères alternés"],
+        "Séance 2": ["Deadlift traditionnel", "Développé incliné barre", "Rowing Pendlay lourd barre", "Glute bridge barre", "Face Pull lourd poulie", "Curl marteau lourd"],
+        "Séance 3": ["Front Squat lourd", "Développé décliné barre lourd", "Tirage horizontal haltère lourd", "Leg Curl assis", "Épaulé-jeté haltères", "Curl barre EZ lourd", "Extensions triceps poulie lourd"]
+    },
+    "Métabolique": {
+        "Séance 1": ["Goblet Squat", "Développé couché haltères tempo lent", "Lat Pulldown", "Leg Extension", "Élévations latérales haltères", "Oiseau haltères", "Curl concentré haltères", "Pushdown triceps poulie"],
+        "Séance 2": ["Romanian Deadlift tempo lent", "Développé incliné haltères haute rep", "Rowing machine tempo lent", "Hip Thrust haute rep", "Shrugs haltères", "Face Pull poulie", "Curl haltère incliné", "Extension triceps overhead corde"],
+        "Séance 3": ["Front Squat léger haute rep", "Push-ups lestés haute rep", "Tirage horizontal poulie haute rep", "Leg Curl léger tempo lent", "Développé haltères Arnold", "Curl marteau corde", "Kickback triceps poulie"]
+    }
 }
 
-# Formulaire pour enregistrer la séance
 with st.form("nouvelle_seance"):
     st.subheader(f"📌 {bloc} - {seance} - {datetime.date.today()}")
-    exercice = st.selectbox("Exercice", exercices[seance])
+    exercice = st.selectbox("Exercice", exercices[bloc][seance])
     set_no = st.number_input("Numéro du set", 1, 10, 1)
     charge = st.number_input("Charge (kg)", 0.0, 500.0, step=0.5)
     repetitions = st.number_input("Répétitions", 1, 50, 10)
@@ -57,14 +62,12 @@ with st.form("nouvelle_seance"):
         save_data(data)
         st.success("🎉 Données enregistrées avec succès !")
 
-# Affichage des performances récentes
 st.subheader("📈 Historique de progression")
 st.dataframe(data.tail(10), use_container_width=True)
 
-# Calcul progression prochaine séance
 st.subheader("🎯 Objectifs prochaine séance")
 prochaines_charges = {}
-for exo in exercices[seance]:
+for exo in exercices[bloc][seance]:
     exo_data = data[(data["Exercice"] == exo) & (data["Bloc"] == bloc)]
     if not exo_data.empty:
         derniere_charge = exo_data.iloc[-1]["Charge"]
